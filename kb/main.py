@@ -28,6 +28,7 @@ from kb.commands.erase import erase
 from kb.commands.ingest import ingest
 from kb.commands.export import export
 from kb.commands.sync import sync
+from kb.commands.generations import generations
 
 from kb.config import DEFAULT_CONFIG
 
@@ -45,6 +46,7 @@ COMMANDS = {
     'export': export,
     'template': template,
     'sync': sync,
+    'generations': generations,
 }
 
 

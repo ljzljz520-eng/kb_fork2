@@ -31,9 +31,31 @@ DEFAULT_CONFIG = {
     "PATH_KB_CONFIG": str(Path(BASE_PATH, "kb.conf.py")),
     "PATH_KB_TEMPLATES": str(Path(BASE_PATH, "templates")),
     "PATH_KB_DEFAULT_TEMPLATE": str(Path(BASE_PATH, "templates", "default")),
+    # KB Bundle machinery (staging + generations)
+    "PATH_KB_STAGING": str(Path(BASE_PATH, ".staging")),
+    "PATH_KB_GENERATIONS": str(Path(BASE_PATH, ".generations")),
+    "BUNDLE_FORMAT_VERSION": 1,
+    "BUNDLE_KEEP_GENERATIONS": 5,
+    "BUNDLE_CHUNK_SIZE": 1024 * 1024,
+    # Import safety limits (zip-bomb / resource exhaustion guards)
+    "BUNDLE_MAX_MEMBERS": 100000,
+    "BUNDLE_MAX_TOTAL_BYTES": 50 * 1024 ** 3,   # 50 GiB expanded
+    "BUNDLE_MAX_FILE_BYTES": 20 * 1024 ** 3,    # a single member
+    "BUNDLE_MAX_COMPRESSION_RATIO": 1000,
+    "BUNDLE_FREE_SPACE_FACTOR": 1.1,
     "DB_SCHEMA_VERSION": 1,
     "EDITOR": os.environ.get("EDITOR", "vim"),
     "INITIAL_CATEGORIES": ["default", ]
+}
+
+# Feature flags advertised/recorded by bundles. These describe optional
+# content sections; unknown flags remain advisory for forward
+# compatibility.
+DEFAULT_FEATURE_FLAGS = {
+    "history": True,
+    "templates": True,
+    "large_files": True,
+    "streaming_checksums": True,
 }
 
 

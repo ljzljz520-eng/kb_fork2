@@ -67,6 +67,9 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
         'export', help='Export the knowledge base')
     erase_parser = subparsers.add_parser(
         'erase', help='Erase the entire kb knowledge base')
+    generations_parser = subparsers.add_parser(
+        'generations',
+        help='List, roll back or prune retained knowledge-base generations')
     sync_parser = subparsers.add_parser(
         'sync', help='Synchronize the knowledge base with a remote git repository')
     help_parser = subparsers.add_parser(
@@ -507,8 +510,44 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
     # import parser
     import_parser.add_argument(
         "file",
-        help="Archive to import as knowledge base",
+        help="Archive to import as knowledge base (.kbbundle or legacy "
+             ".tar.gz)",
         type=str,
+    )
+    import_parser.add_argument(
+        "-y", "--yes",
+        help="Do not prompt for confirmation (legacy archives)",
+        action='store_true',
+        dest='yes',
+        default=False,
+    )
+    import_parser.add_argument(
+        "--verify-key",
+        help="Path to the key file used to verify a signed bundle",
+        type=str,
+        dest='verify_key',
+        default=None,
+    )
+    import_parser.add_argument(
+        "--encrypted",
+        help="Prompt for a passphrase to decrypt an encrypted bundle",
+        action='store_true',
+        dest='encrypted',
+        default=False,
+    )
+    import_parser.add_argument(
+        "--no-resume",
+        help="Do not reuse files left in staging by a previous attempt",
+        action='store_true',
+        dest='no_resume',
+        default=False,
+    )
+    import_parser.add_argument(
+        "--keep-staging",
+        help="Keep the staging directory after a failed import (debugging)",
+        action='store_true',
+        dest='keep_staging',
+        default=False,
     )
 
     # export parser
@@ -526,6 +565,68 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
         dest='only_data',
         default=False,
     )
+    export_parser.add_argument(
+        "--bundle",
+        help="Export in the new KB Bundle format (.kbbundle) with a "
+             "manifest, per-file hashes, DB dump and feature flags",
+        action='store_true',
+        dest='bundle',
+        default=False,
+    )
+    export_parser.add_argument(
+        "--gzip",
+        help="Compress the bundle with gzip",
+        action='store_true',
+        dest='gzip',
+        default=False,
+    )
+    export_parser.add_argument(
+        "--sign-key",
+        help="Path to a key file used to sign the bundle (HMAC-SHA256)",
+        type=str,
+        dest='sign_key',
+        default=None,
+    )
+    export_parser.add_argument(
+        "--encrypt",
+        help="Encrypt the bundle (prompts for a passphrase)",
+        action='store_true',
+        dest='encrypt',
+        default=False,
+    )
+    export_parser.add_argument(
+        "--no-history",
+        help="Do not include recent.hist in the bundle",
+        action='store_true',
+        dest='no_history',
+        default=False,
+    )
+    export_parser.add_argument(
+        "--no-templates",
+        help="Do not include templates in the bundle",
+        action='store_true',
+        dest='no_templates',
+        default=False,
+    )
+
+    # generations parser
+    generations_parser.add_argument(
+        "generations_operation",
+        help="Use \"list\" to show retained generations, \"rollback\" to "
+             "restore one, \"prune\" to delete old ones",
+        choices=['list', 'rollback', 'prune'])
+    generations_parser.add_argument(
+        "gen_id",
+        help="Generation id to roll back to",
+        type=str,
+        nargs="?",
+        default=None)
+    generations_parser.add_argument(
+        "--keep",
+        help="Number of generations to retain when pruning",
+        type=int,
+        dest='keep',
+        default=None)
 
     # erase parser
     erase_parser.add_argument(
@@ -556,7 +657,7 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    parsed_args = parser.parse_args()
+    parsed_args = parser.parse_args(args)
     if parsed_args.command == 'help':
         if not parsed_args.cmd:
             parser.print_help(sys.stderr)
